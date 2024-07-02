@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -183,6 +183,46 @@ knitr::opts_chunk$set(
 #  )
 
 ## -----------------------------------------------------------------------------
+#  # Get details of multiple files by providing their IDs
+#  a$files$bulk_get(files = list("<file_1_id>", "<file_2_id>"))
+
+## -----------------------------------------------------------------------------
+#  # Get files
+#  file_obj_1 <- a$files$get(id = "<file_1_ID>")
+#  file_obj_2 <- a$files$get(id = "<file_2_ID>")
+#  
+#  # Edit file_obj_1 fields
+#  file_obj_1$name <- "new_file_1_name.txt"
+#  file_obj_1$metadata <- list("new_metadata_field" = "123")
+#  file_obj_1$tags <- list("bulk_update_tag")
+#  
+#  # Edit file_obj_2 fields
+#  file_obj_2$name <- "new_file_2_name.txt"
+#  file_obj_2$metadata <- list("new_metadata_field" = "123")
+#  file_obj_2$tags <- list("bulk_update_tag")
+#  
+#  # Bulk update
+#  a$files$bulk_update(files = list(file_obj_1, file_obj_2))
+
+## -----------------------------------------------------------------------------
+#  # Get files
+#  file_obj_1 <- a$files$get(id = "<file_1_ID>")
+#  file_obj_2 <- a$files$get(id = "<file_2_ID>")
+#  
+#  # Edit file_obj_1 fields
+#  file_obj_1$name <- "new_file_1_name.txt"
+#  file_obj_1$metadata <- list("new_metadata_field" = "123")
+#  file_obj_1$tags <- list("bulk_edit_tag")
+#  
+#  # Edit file_obj_2 fields
+#  file_obj_2$name <- "new_file_2_name.txt"
+#  file_obj_2$metadata <- list("new_metadata_field" = "123")
+#  file_obj_2$tags <- list("bulk_edit_tag")
+#  
+#  # Bulk edit
+#  a$files$bulk_edit(files = list(file_obj_1, file_obj_2))
+
+## -----------------------------------------------------------------------------
 #  # Option 1 - Using the project parameter
 #  
 #  # Option 1.a (providing a Project object as the project parameter)
@@ -298,6 +338,15 @@ knitr::opts_chunk$set(
 #  
 #  # Delete a folder
 #  demo_folder$delete()
+
+## -----------------------------------------------------------------------------
+#  # Delete two files by providing their IDs
+#  a$files$delete(files = list("<file_1_ID>", "<file_2_ID>"))
+#  
+#  # Delete two files by providing a list of File objects
+#  file_object_1 <- a$files$get(id = "<file_1_ID>")
+#  file_object_2 <- a$files$get(id = "<file_2_ID>")
+#  a$files$delete(files = list(file_object_1, file_object_2))
 
 ## -----------------------------------------------------------------------------
 #  # Reload file/folder objects
@@ -462,6 +511,15 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 #  # Get specific task by ID
 #  a$tasks$get(id = "<task_id>")
+
+## -----------------------------------------------------------------------------
+#  # Get details of multiple tasks by providing their IDs
+#  a$tasks$bulk_get(tasks = list("<task_1_id>", "task_2_id"))
+#  
+#  # Get details of multiple tasks by providing Task objects
+#  task_obj_1 <- a$tasks$get("<task_1_id>")
+#  task_obj_2 <- a$tasks$get("<task_2_id>")
+#  a$tasks$bulk_get(tasks = list(task_obj_1, task_obj_2))
 
 ## -----------------------------------------------------------------------------
 #  # Create a draft task

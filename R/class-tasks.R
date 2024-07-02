@@ -17,7 +17,8 @@ Tasks <- R6::R6Class(
     URL = list(
       "query" = "tasks/",
       "get" = "tasks/{id}",
-      "delete" = "tasks"
+      "delete" = "tasks",
+      "bulk_get" = "bulk/tasks/get"
     ),
 
     #' @description Create new Tasks resource object.
@@ -317,10 +318,10 @@ Tasks <- R6::R6Class(
     #'  \itemize{
     #'    \item `main_location` - Defines the output location for all
     #'      output nodes in the task. Can be a string path within the project in
-    #'      which the task is created, for example
-    #'      `/Analysis/<task_id>_<task_name>/`
-    #'      or a path on an attached volume, such as
-    #'      `volumes://volume_name/<project_id>/html`.
+    #'      which the task is created, for example \cr
+    #'      `/Analysis/<task_id>_<task_name>/` \cr
+    #'      or a path on an attached volume, such as \cr
+    #'      `volumes://volume_name/<project_id>/html`. \cr
     #'      Parts of the path enclosed in angle brackets <> are tokens that are
     #'      dynamically replaced with corresponding values during task
     #'      execution.
@@ -456,7 +457,7 @@ Tasks <- R6::R6Class(
           task_data[["batch_input"]] <- batch_input
           task_data[["batch_by"]] <- batch_by
         } else {
-          rlang::abort("Batch is set to TRUE, therefore, please, set batching criteria (batch_by) and batch inputs.") # nolint
+          rlang::abort("Batch is set to TRUE, therefore, please set batching criteria (batch_by) and batch inputs.") # nolint
         }
       }
 
@@ -476,17 +477,65 @@ Tasks <- R6::R6Class(
       params[["action"]] <- action
       params[["batch"]] <- batch
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = self$URL[["query"]],
         method = "POST",
         query = params,
-        body = task_data,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
+        body = task_data
       )
 
       return(asTask(res, auth = self$auth))
-    } # nocov end
+    }, # nocov end
+
+    # Get details of multiple tasks
+    #'
+    #' @description This call returns statistics for all specified tasks.
+    #'
+    #' @param tasks A list of \code{\link{Task}} objects or list of strings
+    #'  (IDs) of the tasks you are requesting the statistics for.
+    #'
+    #' @importFrom rlang abort
+    #' @importFrom checkmate assert_list
+    #' @importFrom glue glue
+    #'
+    #' @return \code{\link{Collection}} (list of \code{\link{Task}} objects).
+    #'
+    #' @examples
+    #' \dontrun{
+    #'  # Get details of multiple tasks
+    #'  a$tasks$bulk_get(
+    #'                tasks = list("task_1_ID", "task_2_ID")
+    #'               )
+    #' }
+    #'
+    bulk_get = function(tasks) {
+      if (is_missing(tasks)) {
+        rlang::abort(
+          "Please provide the 'tasks' parameter as a list of task IDs or Task objects." # nolint
+        )
+      }
+
+      checkmate::assert_list(tasks)
+
+      # nocov start
+      tasks <- lapply(tasks, check_and_transform_id, "Task")
+      body <- list(
+        "task_ids" = tasks
+      )
+
+      path <- glue::glue(self$URL[["bulk_get"]])
+
+      res <- self$auth$api(
+        path = path,
+        method = "POST",
+        body = body
+      )
+
+      res$items <- asTaskList(res, auth = self$auth, bulk = TRUE)
+
+      return(asCollection(res, auth = self$auth))
+      # nocov end
+    }
   ),
   private = list(
     # Serialize input values  --------------------------------------------------

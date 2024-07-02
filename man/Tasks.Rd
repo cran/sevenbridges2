@@ -6,6 +6,20 @@
 \description{
 R6 Class representing tasks resource endpoints.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `Tasks$bulk_get`
+## ------------------------------------------------
+
+\dontrun{
+ # Get details of multiple tasks
+ a$tasks$bulk_get(
+               tasks = list("task_1_ID", "task_2_ID")
+              )
+}
+
+}
 \section{Super class}{
 \code{\link[sevenbridges2:Resource]{sevenbridges2::Resource}} -> \code{Tasks}
 }
@@ -24,6 +38,7 @@ R6 Class representing tasks resource endpoints.
 \item \href{#method-Tasks-get}{\code{Tasks$get()}}
 \item \href{#method-Tasks-delete}{\code{Tasks$delete()}}
 \item \href{#method-Tasks-create}{\code{Tasks$create()}}
+\item \href{#method-Tasks-bulk_get}{\code{Tasks$bulk_get()}}
 \item \href{#method-Tasks-clone}{\code{Tasks$clone()}}
 }
 }
@@ -293,10 +308,10 @@ See below for more details.
 \itemize{
 \item \code{main_location} - Defines the output location for all
 output nodes in the task. Can be a string path within the project in
-which the task is created, for example
-\verb{/Analysis/<task_id>_<task_name>/}
-or a path on an attached volume, such as
-\verb{volumes://volume_name/<project_id>/html}.
+which the task is created, for example \cr
+\verb{/Analysis/<task_id>_<task_name>/} \cr
+or a path on an attached volume, such as \cr
+\verb{volumes://volume_name/<project_id>/html}. \cr
 Parts of the path enclosed in angle brackets <> are tokens that are
 dynamically replaced with corresponding values during task
 execution.
@@ -379,6 +394,41 @@ like 'fields', etc.}
 \subsection{Returns}{
 \code{\link{Task}} object.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tasks-bulk_get"></a>}}
+\if{latex}{\out{\hypertarget{method-Tasks-bulk_get}{}}}
+\subsection{Method \code{bulk_get()}}{
+This call returns statistics for all specified tasks.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tasks$bulk_get(tasks)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tasks}}{A list of \code{\link{Task}} objects or list of strings
+(IDs) of the tasks you are requesting the statistics for.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+\code{\link{Collection}} (list of \code{\link{Task}} objects).
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+ # Get details of multiple tasks
+ a$tasks$bulk_get(
+               tasks = list("task_1_ID", "task_2_ID")
+              )
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tasks-clone"></a>}}

@@ -57,7 +57,7 @@ Apps <- R6::R6Class(
     #'  This is a pagination-specific attribute.
     #' @param fields Selector specifying a subset of fields to include in the
     #'  response. For querying apps it is set to return all fields except 'raw'
-    #'  which stores CWL in form of a list. Please, be careful when setting to
+    #'  which stores CWL in form of a list. Please be careful when setting to
     #'  return all fields, since the execution of this API request could be
     #'  time-consuming.
     #' @param ... Other arguments that can be passed to core `api()` function.
@@ -244,12 +244,10 @@ Apps <- R6::R6Class(
 
       path <- glue::glue(self$URL[["copy"]])
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = path,
         method = "POST",
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -347,12 +345,10 @@ Apps <- R6::R6Class(
       id <- glue::glue("{project_id}/{name}")
       path <- glue::glue(self$URL[["raw"]])
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = path,
         method = "POST",
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 

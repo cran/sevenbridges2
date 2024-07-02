@@ -309,12 +309,10 @@ File <- R6::R6Class(
         rlang::abort("Please provide updated information.")
       }
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["file"]]),
         method = "PATCH",
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -377,12 +375,10 @@ File <- R6::R6Class(
         body <- unique(c(self$tags, tags))
       }
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["add_tag"]]),
         method = "PUT",
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -444,12 +440,10 @@ File <- R6::R6Class(
         name = name
       )
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["copy"]]),
         method = "POST",
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -481,11 +475,9 @@ File <- R6::R6Class(
     #' }
     #'
     get_download_url = function(...) {
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["download_url"]]),
         method = "GET",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
       # Set url field
@@ -520,11 +512,9 @@ File <- R6::R6Class(
     #' }
     #'
     get_metadata = function(...) {
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["metadata"]]),
         method = "GET",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
       # Set url field
@@ -586,12 +576,10 @@ File <- R6::R6Class(
       } else {
         method <- "PATCH"
       }
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["metadata"]]),
         method = method,
         body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -649,12 +637,10 @@ File <- R6::R6Class(
         name = name
       )
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["move"]]),
         method = "POST",
-        body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url
+        body = body
       )
 
       # Return newly created file
@@ -692,11 +678,9 @@ File <- R6::R6Class(
     list_contents = function(limit = getOption("sevenbridges2")$"limit",
                              offset = getOption("sevenbridges2")$"offset",
                              ...) {
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["content"]]),
         method = "GET",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         limit = limit,
         offset = offset,
         ...
@@ -732,11 +716,9 @@ File <- R6::R6Class(
     #' }
     #'
     delete = function() {
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["file"]]),
-        method = "DELETE",
-        token = self$auth$get_token(),
-        base_url = self$auth$url
+        method = "DELETE"
       )
 
       rlang::inform(message = glue::glue("File {self$id} has been deleted."))
@@ -787,7 +769,7 @@ File <- R6::R6Class(
       }
 
       if (is_missing(directory_path)) {
-        rlang::abort("Please, provide directory path where to download your file.") # nolint
+        rlang::abort("Please provide directory path where to download your file.") # nolint
       } else {
         # check if directory exists
         check_download_path(directory_path, filename)
@@ -963,7 +945,10 @@ File <- R6::R6Class(
 )
 
 # Helper functions for creating File objects ---------------------------------
-asFile <- function(x = NULL, auth = NULL) {
+asFile <- function(x = NULL, auth = NULL, bulk = FALSE) {
+  if (bulk) {
+    x <- x$resource
+  }
   File$new(
     res = x,
     href = x$href,
@@ -972,8 +957,8 @@ asFile <- function(x = NULL, auth = NULL) {
   )
 }
 
-asFileList <- function(x, auth) {
-  obj <- lapply(x$items, asFile, auth = auth)
+asFileList <- function(x, auth, bulk = FALSE) {
+  obj <- lapply(x$items, asFile, auth = auth, bulk = bulk)
   obj
 }
 # nocov end

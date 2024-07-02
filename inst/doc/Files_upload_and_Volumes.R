@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -359,6 +359,12 @@ knitr::opts_chunk$set(
 #  imp_obj <- a$imports$get(id = "<import_job_id>")
 
 ## -----------------------------------------------------------------------------
+#  # Get details of multiple import jobs
+#  import_jobs <- a$imports$bulk_get(
+#    imports = list("<import_job_id-1>", "<import_job_id-1>")
+#  )
+
+## -----------------------------------------------------------------------------
 #  ## First, get the volume you want to import files from
 #  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
 #  
@@ -373,7 +379,7 @@ knitr::opts_chunk$set(
 #  
 #  ## Perform a file import
 #  imp_job1 <- a$imports$submit_import(
-#    source_location = volume_file_import,
+#    source_location = volume_file_import$location,
 #    destination_project = test_proj,
 #    autorename = TRUE
 #  )
@@ -394,7 +400,7 @@ knitr::opts_chunk$set(
 #  
 #  # Perform a folder import
 #  imp_job2 <- a$imports$submit_import(
-#    source_location = volume_folder_import,
+#    source_location = volume_folder_import$prefix,
 #    destination_project = test_proj,
 #    overwrite = TRUE,
 #    preserve_folder_structure = TRUE
@@ -413,6 +419,91 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 #  # Reload import object
 #  imp_job1$reload()
+
+## -----------------------------------------------------------------------------
+#  ## First, get the volume you want to import files from
+#  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+#  
+#  ## Then, get the project object or the ID of the project into which you want
+#  # to import files
+#  test_proj <- a$projects$get("<project_id>")
+#  
+#  ## List all volume files
+#  vol1_content <- vol1$list_contents()
+#  
+#  ## Preview the content and select one VolumeFile object and two VolumePrefix
+#  ## objects (folders) for the purpose of this example
+#  volume_file_import <- vol1_content$items[[1, 2]]
+#  volume_file_import
+#  
+#  volume_folder_import <- vol1_content$prefixes[[1]]
+#  volume_folder_import
+#  
+#  ## Construct the inputs list by filling the necessary information for each
+#  # file/folder to import
+#  to_import <- list(
+#    list(
+#      source_volume = "rfranklin/my-volume",
+#      source_location = "chimeras.html.gz",
+#      destination_project = "rfranklin/my-project"
+#    ),
+#    list(
+#      source_volume = vol1,
+#      source_location = "my-folder/",
+#      destination_project = test_proj,
+#      autorename = TRUE,
+#      preserve_folder_structure = TRUE
+#    ),
+#    list(
+#      source_volume = "rfranklin/my-volume",
+#      source_location = "my-volume-folder/",
+#      destination_parent = "parent-id",
+#      name = "new-folder-name",
+#      autorename = TRUE,
+#      preserve_folder_structure = FALSE
+#    )
+#  )
+#  bulk_import_jobs <- a$imports$bulk_submit_import(items = to_import)
+#  
+#  # Preview the results
+#  bulk_import_jobs
+#  
+#  # Get updated status by fetching details with bulk_get() and by passing the
+#  # list of import jobs created in the previous step
+#  a$imports$bulk_get(imports = bulk_import_jobs$items)
+
+## -----------------------------------------------------------------------------
+#  ## First, get the volume you want to import files from
+#  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+#  
+#  ## Then, get the project object or the ID of the project into which you want
+#  # to import files
+#  test_proj <- a$projects$get("<project_id>")
+#  
+#  ## List all volume files
+#  vol1_content <- vol1$list_contents()
+#  
+#  ## Select two VolumeFile objects
+#  volume_file_1_import <- vol1_content$items[[1]]
+#  volume_file_2_import <- vol1_content$items[[2]]
+#  
+#  volume_files_to_import <- list(volume_file_1_import, volume_file_2_import)
+#  
+#  ## Construct the inputs list using the prepare_items_for_bulk_import() utility
+#  # function
+#  to_import <- prepare_items_for_bulk_import(
+#    volume_items = volume_files_to_import,
+#    destination_project = test_proj
+#  )
+#  
+#  bulk_import_jobs <- a$imports$bulk_submit_import(items = to_import)
+#  
+#  # Preview the results
+#  bulk_import_jobs
+#  
+#  # Get updated status by fetching details with bulk_get() and by passing the
+#  # list of import jobs created in the previous step
+#  a$imports$bulk_get(imports = bulk_import_jobs$items)
 
 ## -----------------------------------------------------------------------------
 #  # List exports
@@ -448,6 +539,12 @@ knitr::opts_chunk$set(
 #  exp_obj <- auth$exports$get(id = "<export_job_id>")
 
 ## -----------------------------------------------------------------------------
+#  # Get details of multiple export jobs
+#  export_jobs <- a$exports$bulk_get(
+#    exports = list("<export_job_id-1>", "<export_job_id-1>")
+#  )
+
+## -----------------------------------------------------------------------------
 #  # First, get the volume you want to export files to
 #  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
 #  
@@ -479,4 +576,80 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 #  # Reload export object
 #  exp_job1$reload()
+
+## -----------------------------------------------------------------------------
+#  ## First, get the project and files you want to export
+#  test_proj <- a$projects$get("<project_id>")
+#  proj_files <- test_proj$list_files()
+#  
+#  ## Choose the first 3 files to export
+#  files_to_export <- proj_files$items[1:3]
+#  
+#  ## Then, get the volume you want to export files into
+#  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+#  
+#  ## Construct the inputs list by filling the necessary information for each
+#  # file to export
+#  to_export <- list(
+#    list(
+#      source_file = files_to_export[[1]],
+#      destination_volume = vol1,
+#      destination_location = files_to_export[[1]]$name
+#    ),
+#    list(
+#      source_file = "second-file-id",
+#      destination_volume = vol1,
+#      destination_location = "my-folder/exported_second_file.txt",
+#      overwrite = TRUE
+#    ),
+#    list(
+#      source_file = files_to_export[[3]],
+#      destination_volume = vol1,
+#      destination_location = files_to_export[[3]]$name,
+#      overwrite = FALSE,
+#      properties = list(
+#        sse_algorithm = "AES256"
+#      )
+#    ),
+#    copy_only = FALSE
+#  )
+#  bulk_export_jobs <- a$exports$bulk_submit_export(items = to_export)
+#  
+#  # Preview the results
+#  bulk_export_jobs
+#  
+#  # Get updated status by fetching details with bulk_get() and by passing the
+#  # list of export jobs created in the previous step
+#  a$exports$bulk_get(exports = bulk_export_jobs$items)
+
+## -----------------------------------------------------------------------------
+#  ## First, get the project and files you want to export
+#  test_proj <- a$projects$get("<project_id>")
+#  proj_files <- test_proj$list_files()
+#  
+#  ## Then, get the volume you want to export files into
+#  vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+#  
+#  ## Select two File objects
+#  file_1_export <- proj_files[[1]]
+#  file_2_export <- proj_files[[2]]
+#  
+#  files_to_export <- list(file_1_export, file_2_export)
+#  
+#  ## Construct the inputs list using the prepare_items_for_bulk_export() utility
+#  # function
+#  to_export <- prepare_items_for_bulk_export(
+#    files = files_to_export,
+#    destination_volume = vol1,
+#    destination_location_prefix = "my-folder/"
+#  )
+#  
+#  bulk_export_jobs <- a$exports$bulk_submit_export(items = to_export)
+#  
+#  # Preview the results
+#  bulk_export_jobs
+#  
+#  # Get updated status by fetching details with bulk_get() and by passing the
+#  # list of export jobs created in the previous step
+#  a$exports$bulk_get(exports = bulk_export_jobs$items)
 

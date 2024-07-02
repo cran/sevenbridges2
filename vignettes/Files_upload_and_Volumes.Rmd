@@ -460,7 +460,7 @@ execute:
 ### Update volume
 
 You can update volume's `description`, `access_mode` and `service` information. 
-Please, consult our [API documentation](https://docs.sevenbridges.com/reference/update-a-volume-v2) 
+Please consult our [API documentation](https://docs.sevenbridges.com/reference/update-a-volume-v2) 
 on how to use the `service` parameter. 
 
 ```{r}
@@ -812,6 +812,23 @@ imp_obj <- a$imports$get(id = "<import_job_id>")
 
 <div align="right"><a href="#top">top</a></div>
 
+## Get bulk import jobs
+
+Users are able to fetch details for multiple import jobs by calling one bulk
+action - the `bulk_get()` method. The accepted input can be a list of import
+job IDs or a list of import job objects (of class Import).
+The result will be a Collection object containing a list of (updated) 
+import jobs.
+
+```{r}
+# Get details of multiple import jobs
+import_jobs <- a$imports$bulk_get(
+  imports = list("<import_job_id-1>", "<import_job_id-1>")
+)
+```
+
+<div align="right"><a href="#top">top</a></div>
+
 ## Submit new import - import a volume file into the project
 
 In order to import volume files into a project, users can use the
@@ -834,7 +851,7 @@ volume_file_import <- vol1_content$items[[3]]
 
 ## Perform a file import
 imp_job1 <- a$imports$submit_import(
-  source_location = volume_file_import,
+  source_location = volume_file_import$location,
   destination_project = test_proj,
   autorename = TRUE
 )
@@ -861,7 +878,7 @@ volume_folder_import <- vol1_content$prefixes[[1]]
 
 # Perform a folder import
 imp_job2 <- a$imports$submit_import(
-  source_location = volume_folder_import,
+  source_location = volume_folder_import$prefix,
   destination_project = test_proj,
   overwrite = TRUE,
   preserve_folder_structure = TRUE
@@ -891,6 +908,137 @@ imp_job1$reload()
 ```
 
 <div align="right"><a href="#top">top</a></div>
+
+## Submit bulk import - import multiple volume files or folders into a project
+
+Users are able to perform the bulk action on multiple volume files or folders
+and import them into a project using a single call of the 
+`bulk_submit_import()` method from the `Auth$imports` path.
+
+The required input should be a nested list of elements for each file/folder you
+want to import containing specific fields: `source_volume`, `source_location`, 
+`destination_project`, `destination_parent`, `name`, `autorename` and 
+`perserve_folder_structure.`
+
+```{r}
+## First, get the volume you want to import files from
+vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+
+## Then, get the project object or the ID of the project into which you want
+# to import files
+test_proj <- a$projects$get("<project_id>")
+
+## List all volume files
+vol1_content <- vol1$list_contents()
+
+## Preview the content and select one VolumeFile object and two VolumePrefix
+## objects (folders) for the purpose of this example
+volume_file_import <- vol1_content$items[[1, 2]]
+volume_file_import
+
+volume_folder_import <- vol1_content$prefixes[[1]]
+volume_folder_import
+
+## Construct the inputs list by filling the necessary information for each
+# file/folder to import
+to_import <- list(
+  list(
+    source_volume = "rfranklin/my-volume",
+    source_location = "chimeras.html.gz",
+    destination_project = "rfranklin/my-project"
+  ),
+  list(
+    source_volume = vol1,
+    source_location = "my-folder/",
+    destination_project = test_proj,
+    autorename = TRUE,
+    preserve_folder_structure = TRUE
+  ),
+  list(
+    source_volume = "rfranklin/my-volume",
+    source_location = "my-volume-folder/",
+    destination_parent = "parent-id",
+    name = "new-folder-name",
+    autorename = TRUE,
+    preserve_folder_structure = FALSE
+  )
+)
+bulk_import_jobs <- a$imports$bulk_submit_import(items = to_import)
+
+# Preview the results
+bulk_import_jobs
+
+# Get updated status by fetching details with bulk_get() and by passing the
+# list of import jobs created in the previous step
+a$imports$bulk_get(imports = bulk_import_jobs$items)
+```
+
+As you may see from the example above, users are able to import folders from
+the volume into the project or a project directory, with the option to 
+preserve or not to preserve folder structure.
+
+Moreover, you are able to pass the objects of classes Volume, Project or File 
+(with type = 'folder') for `source_volume`, `destination_project` and 
+`destination_parent` fields when constructing the inputs list, besides using 
+their string IDs.
+
+
+In the example above, the list of items for the bulk import job was manually
+created. Alternatively, you can use the `prepare_items_for_bulk_import()`
+utility function to generate the items list.
+
+This function allows you to prepare the list of bulk import items based on the
+provided `VolumeFile` or `VolumePrefix` objects, filling the following fields
+for each item: `source_volume`, `source_location`, `destination_project` or
+`destination_parent`, `autorename`, `preserve_folder_structure`.
+
+Note that the same `destination_project`/`destination_parent` and `autorename`
+values will be applied uniformly across all items in the resulting list.
+The `preserve_folder_structure` parameter, if provided, applies exclusively to
+`VolumePrefix` items.
+
+```{r}
+## First, get the volume you want to import files from
+vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+
+## Then, get the project object or the ID of the project into which you want
+# to import files
+test_proj <- a$projects$get("<project_id>")
+
+## List all volume files
+vol1_content <- vol1$list_contents()
+
+## Select two VolumeFile objects
+volume_file_1_import <- vol1_content$items[[1]]
+volume_file_2_import <- vol1_content$items[[2]]
+
+volume_files_to_import <- list(volume_file_1_import, volume_file_2_import)
+
+## Construct the inputs list using the prepare_items_for_bulk_import() utility
+# function
+to_import <- prepare_items_for_bulk_import(
+  volume_items = volume_files_to_import,
+  destination_project = test_proj
+)
+
+bulk_import_jobs <- a$imports$bulk_submit_import(items = to_import)
+
+# Preview the results
+bulk_import_jobs
+
+# Get updated status by fetching details with bulk_get() and by passing the
+# list of import jobs created in the previous step
+a$imports$bulk_get(imports = bulk_import_jobs$items)
+```
+
+Keep in mind that `prepare_items_for_bulk_import()` is designed solely to
+assist in constructing the list of items for submitting a bulk import job. It
+operates under certain constraints; refer to the function's documentation for
+further details. After obtaining the function's output, you can manually adjust
+individual items as needed.
+
+<div align="right"><a href="#top">top</a></div>
+
 
 # Exports
 
@@ -961,6 +1109,23 @@ export job object when provided with job id.
 ```{r}
 # Get a single export
 exp_obj <- auth$exports$get(id = "<export_job_id>")
+```
+
+<div align="right"><a href="#top">top</a></div>
+
+## Get bulk export jobs
+
+Users are able to fetch details for multiple export jobs by calling one bulk
+action - the `bulk_get()` method. The accepted input can be a list of export
+job IDs or a list of export job objects (of class Export).
+The result will be a Collection object containing a list of (updated) 
+export jobs.
+
+```{r}
+# Get details of multiple export jobs
+export_jobs <- a$exports$bulk_get(
+  exports = list("<export_job_id-1>", "<export_job_id-1>")
+)
 ```
 
 <div align="right"><a href="#top">top</a></div>
@@ -1038,5 +1203,129 @@ its state, you can always call the `reload()` function:
 # Reload export object
 exp_job1$reload()
 ```
+
+<div align="right"><a href="#top">top</a></div>
+
+## Submit bulk export - export multiple files into a volume
+
+Users are able to perform the bulk action on multiple project files and
+export them into a volume using a single call of the `bulk_submit_export()`
+method from the `Auth$exports` path.
+
+The required input should be a nested list of elements for each file you
+want to export containing specific fields: `source_file`, `destination_volume`, 
+`destination_location`, `overwrite` and 
+`properties` that accepts a list with fields: `sse_algorithm`, 
+`sse_aws_kms_key_id` and/or `aws_canned_acl`.
+
+```{r}
+## First, get the project and files you want to export
+test_proj <- a$projects$get("<project_id>")
+proj_files <- test_proj$list_files()
+
+## Choose the first 3 files to export
+files_to_export <- proj_files$items[1:3]
+
+## Then, get the volume you want to export files into
+vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+
+## Construct the inputs list by filling the necessary information for each
+# file to export
+to_export <- list(
+  list(
+    source_file = files_to_export[[1]],
+    destination_volume = vol1,
+    destination_location = files_to_export[[1]]$name
+  ),
+  list(
+    source_file = "second-file-id",
+    destination_volume = vol1,
+    destination_location = "my-folder/exported_second_file.txt",
+    overwrite = TRUE
+  ),
+  list(
+    source_file = files_to_export[[3]],
+    destination_volume = vol1,
+    destination_location = files_to_export[[3]]$name,
+    overwrite = FALSE,
+    properties = list(
+      sse_algorithm = "AES256"
+    )
+  ),
+  copy_only = FALSE
+)
+bulk_export_jobs <- a$exports$bulk_submit_export(items = to_export)
+
+# Preview the results
+bulk_export_jobs
+
+# Get updated status by fetching details with bulk_get() and by passing the
+# list of export jobs created in the previous step
+a$exports$bulk_get(exports = bulk_export_jobs$items)
+```
+
+As you may see from the example above, users are able to export files into a 
+folder on a volume.
+
+Moreover, you are able to pass the objects of classes Volume or File 
+(with type = 'file' only, since folders can't be exported) when 
+constructing the inputs list, in addition to using their string IDs for
+`source_file` and `destination_volume` fields. However, `destination_location`
+on the volume must be set as character field. 
+
+Lastly, `copy_only` field will apply to all files being exported, which means
+that each file would be copied to the volume, while source location would
+remain on the Platform if `copy_only` is set to TRUE.
+
+In the example above, the list of items for the bulk export job was manually
+created. Alternatively, you can use the `prepare_items_for_bulk_export()`
+utility function to generate the items list.
+
+This function allows you to prepare the list of bulk export items based on the
+provided `File` objects, filling the following fields for each item: 
+`source_file`, `destination_volume`, `destination_location`, `overwrite`,
+`properties`.
+
+Check the function's documentation and [API documentation](https://docs.sevenbridges.com/reference/start-a-bulk-export-job)
+for more details.
+
+
+```{r}
+## First, get the project and files you want to export
+test_proj <- a$projects$get("<project_id>")
+proj_files <- test_proj$list_files()
+
+## Then, get the volume you want to export files into
+vol1 <- a$volumes$get(id = "<volume_owner_or_division>/<volume_name>")
+
+## Select two File objects
+file_1_export <- proj_files[[1]]
+file_2_export <- proj_files[[2]]
+
+files_to_export <- list(file_1_export, file_2_export)
+
+## Construct the inputs list using the prepare_items_for_bulk_export() utility
+# function
+to_export <- prepare_items_for_bulk_export(
+  files = files_to_export,
+  destination_volume = vol1,
+  destination_location_prefix = "my-folder/"
+)
+
+bulk_export_jobs <- a$exports$bulk_submit_export(items = to_export)
+
+# Preview the results
+bulk_export_jobs
+
+# Get updated status by fetching details with bulk_get() and by passing the
+# list of export jobs created in the previous step
+a$exports$bulk_get(exports = bulk_export_jobs$items)
+```
+
+Keep in mind that `prepare_items_for_bulk_export()` is designed solely to
+assist in constructing the list of items for submitting a bulk export job. It
+operates under certain constraints; refer to the function's documentation for
+further details. After obtaining the function's output, you can manually adjust
+individual items as needed.
 
 <div align="right"><a href="#top">top</a></div>

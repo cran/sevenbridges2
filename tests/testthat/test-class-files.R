@@ -238,7 +238,7 @@ test_that("Files create_folder() throws error when expected", {
   # Copy fails when name is missing
   testthat::expect_error(
     do.call(setup_files_obj$create_folder, missing_name_param),
-    regexp = "Please, provide the folder's name.", # nolint
+    regexp = "Please provide the folder's name.", # nolint
     fixed = TRUE
   )
 
@@ -299,6 +299,72 @@ test_that("Files create_folder() throws error when expected", {
   testthat::expect_error(
     do.call(setup_files_obj$create_folder, bad_project_param2),
     regexp = "Assertion on 'project' failed: Must inherit from class 'Project', but has classes 'App','Item','R6'.", # nolint
+    fixed = TRUE
+  )
+})
+
+test_that("Files bulk_get() throws error when expected", {
+  # Setup test parameters for test
+  test_bad_file_ids <- list(files = 1)
+  test_missing_file_ids <- list(files = NULL)
+
+  # Bulk get fails when bad files param is provided
+  testthat::expect_error(do.call(setup_files_obj$bulk_get, test_bad_file_ids))
+
+  # Bulk get fails when files param is not provided
+  testthat::expect_error(
+    do.call(setup_files_obj$bulk_get, test_missing_file_ids),
+    regexp = "Please provide the 'files' parameter.",
+    fixed = TRUE
+  )
+})
+
+test_that("Files bulk_update() throws error when expected", {
+  # Setup test parameters for test
+  test_missing_files <- list(files = NULL)
+  test_bad_files <- list(files = 1)
+
+
+  # Bulk update fails when files param is not provided
+  testthat::expect_error(
+    do.call(setup_files_obj$bulk_update, test_missing_files),
+    regexp = "Please provide the 'files' parameter.",
+    fixed = TRUE
+  )
+
+  # Bulk update fails when bad files param is provided
+  testthat::expect_error(do.call(setup_files_obj$bulk_update, test_bad_files))
+})
+
+test_that("Files bulk_edit() throws error when expected", {
+  # Setup test parameters for test
+  test_missing_files <- list(files = NULL)
+  test_bad_files <- list(files = 1)
+
+
+  # Bulk edit fails when files param is not provided
+  testthat::expect_error(
+    do.call(setup_files_obj$bulk_edit, test_missing_files),
+    regexp = "Please provide the 'files' parameter.",
+    fixed = TRUE
+  )
+
+  # Bulk edit fails when bad files param is provided
+  testthat::expect_error(do.call(setup_files_obj$bulk_edit, test_bad_files))
+})
+
+test_that("Files bulk_delete() method throws error when expected", {
+  # Setup test parameters for test
+  test_bad_files <- list(files = 1)
+  test_missing_files <- list(files = NULL)
+
+  # Bulk delete fails when bad files param is provided
+  testthat::expect_error(setup_files_obj$bulk_delete(test_bad_files))
+
+  # Bulk delete fails when files param is not provided
+  testthat::expect_error(
+    setup_files_obj$bulk_delete(test_missing_files),
+    regexp = "Please provide the 'files' parameter.",
     fixed = TRUE
   )
 })

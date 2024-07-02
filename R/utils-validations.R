@@ -136,7 +136,8 @@ check_offset <- function(offset) {
 #'
 #' @noRd
 check_tags <- function(tags) {
-  if (!checkmate::test_list(tags,
+  if (!checkmate::test_list(
+    tags,
     types = "character",
     null.ok = TRUE,
     names = "unnamed"
@@ -247,7 +248,7 @@ check_settings <- function(settings) {
 #' @noRd
 check_folder_name <- function(name) {
   if (is_missing(name)) {
-    rlang::abort("Please, provide the folder's name.")
+    rlang::abort("Please provide the folder's name.")
   }
   checkmate::assert_string(name)
   if (substr(name, 1, 2) == "__") {
@@ -371,16 +372,11 @@ check_upload_params <- function(size, part_size) {
     null.ok = FALSE
   )
 
-  if (!(size >= 0 &&
-    size <= getOption("sevenbridges2")$MAXIMUM_OBJECT_SIZE)) {
-    # nolint start
+  if (!(size >= 0 && size <= getOption("sevenbridges2")$MAXIMUM_OBJECT_SIZE)) {
     rlang::abort("File size must be between 0 - 5497558138880 (5TB), inclusive")
-    # nolint end
   }
-  if (!(
-    part_size <= getOption("sevenbridges2")$MAXIMUM_PART_SIZE &&
-      part_size >= getOption("sevenbridges2")$MINIMUM_PART_SIZE
-  )) {
+  if (!(part_size <= getOption("sevenbridges2")$MAXIMUM_PART_SIZE &&
+    part_size >= getOption("sevenbridges2")$MINIMUM_PART_SIZE)) {
     # nolint start
     rlang::abort("Parameter part_size must be 5 MB to 5 GB, last part can be < 5 MB")
     # nolint end
@@ -391,7 +387,7 @@ check_upload_params <- function(size, part_size) {
   if (part_length < 1 ||
     part_length > getOption("sevenbridges2")$MAXIMUM_TOTAL_PARTS) {
     # nolint start
-    rlang::abort("Total number of parts must be from 1 to 10,000 (inclusive). Please, modify part_size.")
+    rlang::abort("Total number of parts must be from 1 to 10,000 (inclusive). Please modify part_size.")
     # nolint end
   }
 }
@@ -511,7 +507,7 @@ transform_configuration_param <- function(configuration) {
     config_json_string <- readr::read_file(configuration)
   } else {
     rlang::abort(
-      "Invalid configuration parameter! \n Please, provide a string path to the JSON file or a named list." # nolint
+      "Invalid configuration parameter! \n Please provide a string path to the JSON file or a named list." # nolint
     )
   }
   return(config_json_string)
@@ -583,4 +579,141 @@ check_execution_settings <- function(execution_settings = NULL) {
       null.ok = TRUE
     )
   }
+}
+
+
+# Check the bulk delete response and notify the user of the action's outcome
+#'
+#' @description This function processes the response from a bulk delete API
+#'  call and informs the user about the results. It distinguishes between
+#'  successfully deleted files and files that could not be deleted because they
+#'  do not exist.
+#'
+#' @param files A character vector of file IDs that were requested to be
+#'  deleted.
+#' @param res Bulk delete API call response containing the `items` field where
+#'  each item indicates whether the corresponding file was successfully deleted
+#'  or not.
+#'
+#' @importFrom rlang abort inform format_error_bullets
+#' @importFrom cli cli_text qty cli_end
+#' @importFrom checkmate assert_character assert_list
+#'
+#' @return None. This function only provides console output to inform the user
+#'  about the status of the file deletions.
+#'
+#' @examples
+#' \dontrun{
+#' files <- c("file_id_1", "file_id_2", "file_id_3")
+#' res <- list(items = list(
+#'   list(error = list(status = 404, code = 5002, message = "Requested file does not exist.")), # nolint
+#'   list(resource = list(id = "file_id_2")),
+#'   list(error = list(status = 404, code = 5002, message = "Requested file does not exist.")) # nolint
+#' ))
+#' check_response_and_notify_user(files, res)
+#' }
+#'
+#' @noRd
+check_response_and_notify_user <- function(files, res) {
+  if (is_missing(files)) {
+    rlang::abort("Files parameter is required.")
+  }
+
+  if (is_missing(res)) {
+    rlang::abort("Res parameter is required.")
+  }
+
+  checkmate::assert_list(files,
+    types = "character",
+    min.len = 1,
+    any.missing = FALSE,
+    null.ok = FALSE
+  )
+  checkmate::assert_list(res,
+    min.len = 1,
+    null.ok = FALSE
+  )
+
+  # nocov start
+  # Create empty lists to store results
+  deleted_files <- list()
+  non_existent_files <- list()
+
+  # Process the response items
+  for (i in seq_along(res$items)) {
+    item <- res$items[[i]]
+    if (!is.null(item$error)) {
+      non_existent_files <- c(non_existent_files, files[[i]])
+    } else {
+      deleted_files <- c(deleted_files, files[[i]])
+    }
+  }
+
+  # Inform user of the action's outcome
+  if (length(deleted_files) > 0) {
+    rlang::inform(message = cli::cli_text("{cli::qty(length(deleted_files))} File{?s} with the following ID{?s} {?has/have} been removed:")) # nolint
+    rlang::inform({
+      writeLines(rlang::format_error_bullets(as.character(deleted_files)))
+    })
+  }
+
+  if (length(non_existent_files) > 0) {
+    rlang::inform(message = cli::cli_text("{cli::qty(length(non_existent_files))} File{?s} with the following ID{?s} {?does/do} not exist and therefore could not be deleted:")) # nolint
+    rlang::inform({
+      writeLines(rlang::format_error_bullets(as.character(non_existent_files)))
+    })
+  }
+
+  # Close container elements
+  cli::cli_end()
+  # nocov end
+}
+
+
+# Check and process file object details --------------------------------------
+#'
+#' @description This function takes a provided File object where the user has
+#' manually modified certain fields such as name, tags, and metadata. It
+#' verifies that all fields are of the desired type and assembles them into a
+#' list required for creating the body for the `bulk_update`/ `bulk_edit` API
+#' call.
+#'
+#' @param file File object.
+#'
+#' @importFrom checkmate assert_string assert_list
+#'
+#' @return A list containing the following four fields from the File object:
+#' \itemize{
+#'   \item `id` The ID of the File object.
+#'   \item `name` File's name.
+#'   \item `tags` File tags.
+#'   \item `metadata` Metadata associated with the File object.
+#' }
+#'
+#' @noRd
+check_and_process_file_details <- function(file) {
+  # Check if 'name' is a string
+  checkmate::assert_string(file$name,
+    null.ok = FALSE
+  )
+
+  # Check if 'tags' is an unnamed list
+  checkmate::assert_list(file$tags,
+    types = "character",
+    names = "unnamed"
+  )
+
+  # Check if 'metadata' is a named list with string keys and values
+  checkmate::assert_list(file$metadata,
+    types = "character",
+    names = "named"
+  )
+
+  # Return the processed file details
+  list(
+    id = file$id,
+    name = file$name,
+    tags = file$tags,
+    metadata = file$metadata
+  )
 }

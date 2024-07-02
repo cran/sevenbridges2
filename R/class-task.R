@@ -259,13 +259,11 @@ Task <- R6::R6Class(
       params[["use_interruptible_instances"]] <-
         use_interruptible_instances
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = path,
         method = "POST",
         query = params,
         body = list(),
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -321,13 +319,9 @@ Task <- R6::R6Class(
       checkmate::assert_logical(in_place, null.ok = FALSE)
 
       # nocov start
-      path <- glue::glue(self$URL[["abort"]])
-
-      res <- sevenbridges2::api(
-        path = path,
+      res <- self$auth$api(
+        path = glue::glue(self$URL[["abort"]]),
         method = "POST",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -390,11 +384,9 @@ Task <- R6::R6Class(
 
       params <- list("action" = action)
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = path,
         method = "POST",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         query = params,
         ...
       )
@@ -451,13 +443,9 @@ Task <- R6::R6Class(
     #' @return List of execution details.
     get_execution_details = function(...) {
       # nocov start
-      path <- glue::glue(self$URL[["execution_details"]])
-
-      res <- sevenbridges2::api(
-        path = path,
+      res <- self$auth$api(
+        path = glue::glue(self$URL[["execution_details"]]),
         method = "GET",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -596,13 +584,9 @@ Task <- R6::R6Class(
     #'
     delete = function(...) {
       # nocov start
-      path <- glue::glue(self$URL[["task"]])
-
-      res <- sevenbridges2::api(
-        path = path,
+      res <- self$auth$api(
+        path = glue::glue(self$URL[["task"]]),
         method = "DELETE",
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -638,9 +622,7 @@ Task <- R6::R6Class(
     #' @return \code{\link{Task}} object.
     rerun = function(...) {
       # nocov start
-      path <- glue::glue(self$URL[["clone"]])
-
-      self$clone_task(run = TRUE)
+      self$clone_task(run = TRUE, ...)
     }, # nocov end
 
     # Update task -----------------------------------------------------------
@@ -719,9 +701,9 @@ Task <- R6::R6Class(
     #'  \itemize{
     #'    \item `main_location` - Defines the output location for all
     #'      output nodes in the task. Can be a string path within the project in
-    #'      which the task is created, for example
+    #'      which the task is created, for example \cr
     #'      `/Analysis/<task_id>_<task_name>/`
-    #'      or a path on an attached volume, such as
+    #'      or a path on an attached volume, such as \cr
     #'      `volumes://volume_name/<project_id>/html`.
     #'      Parts of the path enclosed in angle brackets <> are tokens that are
     #'      dynamically replaced with corresponding values during task
@@ -836,7 +818,7 @@ Task <- R6::R6Class(
           task_data[["batch_input"]] <- batch_input
           task_data[["batch_by"]] <- batch_by
         } else {
-          rlang::abort("Batch is set to TRUE, therefore, please, set batching criteria (batch_by) and batch inputs.") # nolint
+          rlang::abort("Batch is set to TRUE, therefore, please set batching criteria (batch_by) and batch inputs.") # nolint
         }
       }
       # nocov start
@@ -851,12 +833,10 @@ Task <- R6::R6Class(
       task_data[["execution_settings"]] <- execution_settings
       task_data[["batch"]] <- batch
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["task"]]),
         method = "PATCH",
         body = task_data,
-        token = self$auth$get_token(),
-        base_url = self$auth$url,
         ...
       )
 
@@ -932,7 +912,10 @@ Task <- R6::R6Class(
 
 # nocov start
 # Helper functions for creating Task objects --------------------------------
-asTask <- function(x = NULL, auth = NULL) {
+asTask <- function(x = NULL, auth = NULL, bulk = FALSE) {
+  if (bulk) {
+    x <- x$resource
+  }
   Task$new(
     res = x,
     href = x$href,
@@ -941,8 +924,8 @@ asTask <- function(x = NULL, auth = NULL) {
   )
 }
 
-asTaskList <- function(x, auth) {
-  obj <- lapply(x$items, asTask, auth = auth)
+asTaskList <- function(x, auth, bulk = FALSE) {
+  obj <- lapply(x$items, asTask, auth = auth, bulk = bulk)
   obj
 }
 # nocov end

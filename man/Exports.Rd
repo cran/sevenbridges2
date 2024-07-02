@@ -53,6 +53,57 @@ R6 Class representing storage exports resource endpoints.
                 )
 }
 
+
+## ------------------------------------------------
+## Method `Exports$bulk_get`
+## ------------------------------------------------
+
+\dontrun{
+ exports_object <- Exports$new(
+                    auth = auth,
+                   )
+
+ # List export jobs
+ exports_object$bulk_get(
+  exports = list("export-job-id-1", "export-job-id-2")
+  )
+}
+
+
+## ------------------------------------------------
+## Method `Exports$bulk_submit_export`
+## ------------------------------------------------
+
+\dontrun{
+ exports_object <- Exports$new(
+                    auth = auth
+                   )
+
+ # Submit new bulk export into a volume
+ exports_object$bulk_submit_export(items = list(
+   list(
+     source_file = "test_file-id",
+     destination_volume = "volume-id",
+     destination_location = "new_volume_file.txt"
+   ),
+   list(
+     source_file = test_file_obj,
+     destination_volume = test_volume_obj,
+     destination_location = "/volume_folder/exported_file.txt",
+     overwrite = TRUE
+   ),
+   list(
+     source_file = "project_file_3_id",
+     destination_volume = "volume-id",
+     destination_location = "project_file_3.txt",
+     properties = list(
+      sse_algorithm = "AES256"
+     )
+   )
+  ), copy_only = TRUE
+ )
+}
+
 }
 \section{Super class}{
 \code{\link[sevenbridges2:Resource]{sevenbridges2::Resource}} -> \code{Exports}
@@ -72,6 +123,8 @@ R6 Class representing storage exports resource endpoints.
 \item \href{#method-Exports-get}{\code{Exports$get()}}
 \item \href{#method-Exports-submit_export}{\code{Exports$submit_export()}}
 \item \href{#method-Exports-delete}{\code{Exports$delete()}}
+\item \href{#method-Exports-bulk_get}{\code{Exports$bulk_get()}}
+\item \href{#method-Exports-bulk_submit_export}{\code{Exports$bulk_submit_export()}}
 \item \href{#method-Exports-clone}{\code{Exports$clone()}}
 }
 }
@@ -320,6 +373,195 @@ like 'fields', etc.}
 Deleting export jobs is not possible.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Exports$delete()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Exports-bulk_get"></a>}}
+\if{latex}{\out{\hypertarget{method-Exports-bulk_get}{}}}
+\subsection{Method \code{bulk_get()}}{
+This call returns the details of a bulk export job.
+When you export files from a project on the Platform into a volume,
+you write to your cloud storage bucket. This call obtains the details
+of that job.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Exports$bulk_get(exports)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{exports}}{The list of the export job IDs as returned by the call
+to start a bulk export job or list of \code{\link{Export}} objects.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+\code{\link{Collection}} with list of \code{\link{Export}}
+objects.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+ exports_object <- Exports$new(
+                    auth = auth,
+                   )
+
+ # List export jobs
+ exports_object$bulk_get(
+  exports = list("export-job-id-1", "export-job-id-2")
+  )
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Exports-bulk_submit_export"></a>}}
+\if{latex}{\out{\hypertarget{method-Exports-bulk_submit_export}{}}}
+\subsection{Method \code{bulk_submit_export()}}{
+Bulk export files from your project on the Seven Bridges
+Platform into your volume. One call can contain up to 100 items.
+Files selected for export must not be public files or aliases.
+Aliases are objects stored in your cloud storage bucket which have
+been made available on the Platform. The volume you are exporting to
+must be configured for read-write access. To do this, set the
+\code{access_mode} parameter to RW when creating or modifying a volume.
+
+Essentially, the call writes to your cloud storage bucket via the
+volume. If this call is successful, the original project files will
+become aliases to the newly exported objects on the volume.
+Source files will be deleted from the Platform and, if no more copies
+of the files exist, they will no longer count towards your total
+storage price on the Platform. In summary, once you export files from
+the Platform to a volume, they are no longer part of the storage on
+the Platform and cannot be exported again.
+
+Learn more about using the Volumes API for \href{https://docs.sevenbridges.com/docs/aws-cloud-storage-tutorial}{Amazon S3} and
+for \href{https://docs.sevenbridges.com/docs/google-cloud-storage-tutorial}{Google Cloud Storage}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Exports$bulk_submit_export(items, copy_only = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{items}}{Nested list of elements containing information about each
+file to be exported. For each element, users must provide:
+\itemize{
+\item \code{source_file} - File ID or File object you want to export to
+the volume,
+\item \code{destination_volume} - Volume ID or Volume object you want to
+export files into.
+\item \code{destination_location} - Volume-specific location to which
+the file will be exported. This location should be recognizable
+to the underlying cloud service as a valid key or path to a
+new file. Please note that if this volume has been configured
+with a \code{prefix} parameter, the value of \code{prefix} will be
+prepended to the location before attempting to create the file on
+the volume. \cr
+If you would like to export the file into a folder on
+the volume, please add folder name as a prefix before the file
+name in the \verb{<folder-name>/<file-name>} form.
+\item \code{overwrite} - Set to \code{TRUE} if you want to overwrite the
+item with the same name if it already exists at the
+destination.
+\item \code{properties} - Named list of additional volume properties,
+like:
+\itemize{
+\item \code{sse_algorithm} - S3 server-side encryption to use when
+exporting to this bucket. Supported values:
+\code{AES256} (SSE-S3 encryption), \code{aws:kms}, \code{null}
+(no server-side encryption). Default: \code{AES256}.
+\item \code{sse_aws_kms_key_id}: Applies to type: \code{s3}.
+If AWS KMS encryption is used, this should be set to the
+required KMS key. If not set and \code{aws:kms} is set as
+\code{sse_algorithm}, default KMS key is used.
+\item \code{aws_canned_acl}: S3 canned ACL to apply on the object
+during export. Supported values: any one of
+\href{https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl}{S3 canned ACLs};
+\code{null} (do not apply canned ACLs). Default: \code{null}.
+}
+}
+
+Example of the list:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{items <- list(
+          list(
+            source_file = "test_file-id",
+            destination_volume = "volume-id",
+            destination_location = "new_volume_file.txt"
+          ),
+          list(
+            source_file = "test_file_obj",
+            destination_volume = "test_volume_obj",
+            destination_location = "/volume_folder/exported_file.txt",
+            overwrite = TRUE
+          ),
+          list(
+            source_file = "project_file_3_id",
+            destination_volume = "volume-id",
+            destination_location = "project_file_3.txt",
+            properties = list(
+              sse_algorithm = "AES256"
+            )
+          )
+        )
+}\if{html}{\out{</div>}}
+
+Read more on how to \href{https://docs.sevenbridges.com/reference/start-a-bulk-export-job}{export files from your project to a volume or a volume folder}.
+
+Utility function \code{\link{prepare_items_for_bulk_export}} can help
+you prepare the \code{items} parameter for the \code{bulk_submit_export()}
+method.}
+
+\item{\code{copy_only}}{If set to true, the files will be copied to a volume
+but the source files will remain on the Platform.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+\code{\link{Collection}} with list of \code{\link{Export}}
+objects.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+ exports_object <- Exports$new(
+                    auth = auth
+                   )
+
+ # Submit new bulk export into a volume
+ exports_object$bulk_submit_export(items = list(
+   list(
+     source_file = "test_file-id",
+     destination_volume = "volume-id",
+     destination_location = "new_volume_file.txt"
+   ),
+   list(
+     source_file = test_file_obj,
+     destination_volume = test_volume_obj,
+     destination_location = "/volume_folder/exported_file.txt",
+     overwrite = TRUE
+   ),
+   list(
+     source_file = "project_file_3_id",
+     destination_volume = "volume-id",
+     destination_location = "project_file_3.txt",
+     properties = list(
+      sse_algorithm = "AES256"
+     )
+   )
+  ), copy_only = TRUE
+ )
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }

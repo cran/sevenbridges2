@@ -17,7 +17,11 @@ Files <- R6::R6Class(
       "query" = "files",
       "get" = "files/{id}",
       "copy" = "action/files/copy",
-      "delete" = "files"
+      "delete" = "files",
+      "bulk_get" = "bulk/files/get",
+      "bulk_update" = "bulk/files/update",
+      "bulk_edit" = "bulk/files/edit",
+      "bulk_delete" = "bulk/files/delete"
     ),
 
     # Initialize Files object -----------------------------------------------
@@ -273,12 +277,10 @@ Files <- R6::R6Class(
         "file_ids" = file_ids
       )
 
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["copy"]]),
         method = "POST",
-        body = body,
-        token = self$auth$get_token(),
-        base_url = self$auth$url
+        body = body
       )
 
       result <- list()
@@ -362,15 +364,266 @@ Files <- R6::R6Class(
         )
       }
       # nocov start
-      res <- sevenbridges2::api(
+      res <- self$auth$api(
         path = glue::glue(self$URL[["query"]]),
-        token = self$auth$get_token(),
         body = body,
-        method = "POST",
-        base_url = self$auth$url
+        method = "POST"
       )
 
       rlang::inform(glue::glue_col("New folder {green {name}} has been created.")) # nolint
+      # nocov end
+    },
+
+    # Bulk deletion of files
+    #'
+    #' @description This method facilitates bulk file deletion. It accepts
+    #'  either a list of \code{\link{File}} objects or a list containing
+    #'  files' IDs.
+    #'
+    #' @param files Either a list of \code{\link{File}} objects or a list
+    #'  of strings (IDs) representing the files you intend to delete.
+    #'
+    #' @importFrom rlang abort inform format_error_bullets
+    #' @importFrom checkmate assert_list
+    #' @importFrom cli cli_text qty
+    #' @importFrom glue glue
+    #'
+    #' @return None. The function only displays the IDs of the deleted files in
+    #'  the console.
+    #'
+    #' @examples
+    #' \dontrun{
+    #'  # Delete two files by providing their IDs
+    #'  a$files$bulk_delete(files = list("file_1_ID", "file_2_ID"))
+    #' }
+    #'
+    #' \dontrun{
+    #'  # Delete two files by providing a list of File objects
+    #'  a$files$bulk_delete(files = list(File_Object_1, File_Object_2))
+    #' }
+    #'
+    bulk_delete = function(files) {
+      if (is_missing(files)) {
+        rlang::abort(
+          "Please provide the 'files' parameter."
+        )
+      }
+
+      checkmate::assert_list(files)
+
+      # nocov start
+      files <- lapply(files, check_and_transform_id, "File")
+      body <- list(
+        "file_ids" = files
+      )
+
+      path <- glue::glue(self$URL[["bulk_delete"]])
+
+      res <- self$auth$api(
+        path = path,
+        method = "POST",
+        body = body
+      )
+
+      check_response_and_notify_user(files, res)
+      # nocov end
+    },
+
+    # Get details of multiple files
+    #'
+    #' @description This call returns the details of multiple specified files,
+    #'  including file names and file metadata. The maximum number of files you
+    #'  can retrieve the details for per call is 100.
+    #'
+    #' @param files A list of \code{\link{File}} objects or list of strings
+    #'  (IDs) of the files you are querying for details.
+    #'
+    #' @importFrom rlang abort
+    #' @importFrom checkmate assert_list
+    #' @importFrom glue glue
+    #'
+    #' @return \code{\link{Collection}} (list of \code{\link{File}} objects).
+    #'
+    #' @examples
+    #' \dontrun{
+    #'  # Get details of multiple files
+    #'  a$files$bulk_get(
+    #'                files = list("file_1_ID", "file_2_ID")
+    #'               )
+    #' }
+    #'
+    bulk_get = function(files) {
+      if (is_missing(files)) {
+        rlang::abort(
+          "Please provide the 'files' parameter."
+        )
+      }
+
+      checkmate::assert_list(files)
+
+      # nocov start
+      files <- lapply(files, check_and_transform_id, "File")
+      body <- list(
+        "file_ids" = files
+      )
+
+      path <- glue::glue(self$URL[["bulk_get"]])
+
+      res <- self$auth$api(
+        path = path,
+        method = "POST",
+        body = body
+      )
+
+      res$items <- asFileList(res, auth = self$auth, bulk = TRUE)
+
+      return(asCollection(res, auth = self$auth))
+      # nocov end
+    },
+
+    # Update details of multiple files
+    #'
+    #' @description A method that sets new information for specified files,
+    #'  replacing all existing information and erasing omitted parameters.
+    #'
+    #' @details For each of the specified files, the call sets a new `name`,
+    #'  new `tags`, and `metadata`.
+    #'
+    #'  When editing fields in the \code{\link{File}} objects you wish to
+    #'   update, keep the following in mind:
+    #'
+    # nolint start
+    #'  \itemize{
+    #'      \item The `name` field should be a string representing the new name of
+    #'       the file.
+    #'      \item The `metadata` field should be a named list of key-value pairs.
+    #'       The keys and values should be strings.
+    #'      \item The `tags` field should be an unnamed list of values.
+    #'  }
+    # nolint end
+    #'
+    #'  The maximum number of files you can update the details for per call is
+    #'  100.
+    #'
+    #' @param files List of \code{\link{File}} objects.
+    #'
+    #' @importFrom rlang abort inform
+    #' @importFrom checkmate assert_list
+    #' @importFrom cli cli_text qty
+    #' @importFrom glue glue
+    #'
+    #' @return \code{\link{Collection}} (list of \code{\link{File}} objects).
+    #'
+    #' @examples
+    #' \dontrun{
+    #'  # Update details of multiple files
+    #'  a$files$bulk_update(
+    #'                files = list(File_Object_1, File_Object_2)
+    #'               )
+    #' }
+    #'
+    bulk_update = function(files) {
+      if (is_missing(files)) {
+        rlang::abort(
+          "Please provide the 'files' parameter."
+        )
+      }
+
+      checkmate::assert_list(files, types = "File")
+
+      # nocov start
+      body <- list(
+        items = lapply(files, function(file) {
+          check_and_process_file_details(file)
+        })
+      )
+
+      path <- glue::glue(self$URL[["bulk_update"]])
+
+      res <- self$auth$api(
+        path = path,
+        method = "POST",
+        body = body
+      )
+
+      rlang::inform(cli::cli_text("{cli::qty(length(files))} File{?s} {?has/have} been updated.")) # nolint
+
+      res$items <- asFileList(res, auth = self$auth, bulk = TRUE)
+
+      return(asCollection(res, auth = self$auth))
+      # nocov end
+    },
+
+    # Edit details of multiple files
+    #'
+    #' @description This method modifies the existing information for specified
+    #'  files or adds new information while preserving omitted parameters.
+    #'
+    #' @details For each of the specified files, the call edits its `name`,
+    #'  `tags`, and `metadata`.
+    #'
+    #'  When editing fields in the \code{\link{File}} objects you wish to
+    #'  update, keep the following in mind:
+    #'
+    # nolint start
+    #'  \itemize{
+    #'      \item The `name` field should be a string representing the new name of
+    #'       the file.
+    #'      \item The `metadata` field should be a named list of key-value pairs.
+    #'       The keys and values should be strings.
+    #'      \item The `tags` field should be an unnamed list of values.
+    #'  }
+    # nolint end
+    #'
+    #'  The maximum number of files you can update the details for per call is
+    #'  100.
+    #'
+    #' @param files List of \code{\link{File}} objects.
+    #'
+    #' @importFrom rlang abort inform
+    #' @importFrom checkmate assert_list
+    #' @importFrom cli cli_text qty
+    #' @importFrom glue glue
+    #'
+    #' @return \code{\link{Collection}} (list of \code{\link{File}} objects).
+    #'
+    #' @examples
+    #' \dontrun{
+    #'  # Edit details of multiple files
+    #'  a$files$bulk_edit(
+    #'                files = list(File_Object_1, File_Object_2)
+    #'               )
+    #' }
+    #'
+    bulk_edit = function(files) {
+      if (is_missing(files)) {
+        rlang::abort(
+          "Please provide the 'files' parameter."
+        )
+      }
+
+      checkmate::assert_list(files, types = "File")
+
+      # nocov start
+      body <- list(
+        items = lapply(files, function(file) {
+          check_and_process_file_details(file)
+        })
+      )
+
+      path <- glue::glue(self$URL[["bulk_edit"]])
+
+      res <- self$auth$api(
+        path = path,
+        method = "POST",
+        body = body
+      )
+
+      rlang::inform(cli::cli_text("{cli::qty(length(files))} File{?s} {?has/have} been updated.")) # nolint
+
+      res$items <- asFileList(res, auth = self$auth, bulk = TRUE)
+
+      return(asCollection(res, auth = self$auth))
       # nocov end
     }
   )
