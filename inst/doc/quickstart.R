@@ -172,7 +172,7 @@ knitr::opts_chunk$set(
 #  
 #  # Search by ID
 #  star_app <- a$apps$get(
-#    id = "admin/sbg-public-data/rna-seq-alignment-star/0"
+#    id = "admin/sbg-public-data/rna-seq-alignment-star-2-7-10a"
 #  )
 
 ## -----------------------------------------------------------------------------
@@ -192,7 +192,7 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 #  # Get public app RNA Sequencing alignment - STAR
 #  star_app <- a$apps$get(
-#    id = "admin/sbg-public-data/rna-seq-alignment-star/0"
+#    id = "admin/sbg-public-data/rna-seq-alignment-star-2-7-10a"
 #  )
 #  
 #  # Copy it into a project
@@ -211,19 +211,19 @@ knitr::opts_chunk$set(
 #  copied_star_app$input_matrix()
 
 ## -----------------------------------------------------------------------------
-#  # Get reads (fastq) files and and copy them into a project
-#  reads_1 <- a$files$get(id = "641c48c425ed1842bd0bf799") # file id
+#  # Get reads (fastq) files and copy them into a project
+#  reads_1 <- a$files$get(id = "5772b6f0507c175267448700") # file id
 #  reads_1$copy_to(project = p)
 #  
-#  reads_2 <- a$files$get(id = "641c48c425ed1842bd0bf835") # file id
+#  reads_2 <- a$files$get(id = "5772b6f2507c175267448703") # file id
 #  reads_2$copy_to(project = p)
 #  
 #  # Get a single file reference file and copy into a project
-#  fasta_in <- a$files$get(id = "641c48c525ed1842bd0bf86a") # file id
+#  fasta_in <- a$files$get(id = "5c614f097369c402a28a3c41") # file id
 #  fasta_in$copy_to(project = p)
 #  
 #  # Get gtf file and copy into a project
-#  gtf_in <- a$files$get(id = "641c48c425ed1842bd0bf825") # file id
+#  gtf_in <- a$files$get(id = "5c614e5e7369c402a18a3c41") # file id
 #  gtf_in$copy_to(project = p)
 #  
 #  # Get copied files
@@ -238,9 +238,9 @@ knitr::opts_chunk$set(
 #    description = "STAR test",
 #    app = copied_star_app,
 #    inputs = list(
-#      "fastq" = c(input_files[[1]], input_files[[2]]),
-#      "genomeFastaFiles" = input_files[[3]],
-#      "sjdbGTFfile" = list(input_files[[4]])
+#      "in_reads" = c(input_files[[1]], input_files[[2]]),
+#      "in_reference_or_sgg_archive" = input_files[[3]],
+#      "in_gene_annotation" = input_files[[4]]
 #    )
 #  )
 #  

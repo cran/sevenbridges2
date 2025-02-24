@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2024-07-01" />
+<meta name="date" content="2025-02-24" />
 
 <title>Projects, Files, Apps and Tasks execution with Seven Bridges API R Client</title>
 
@@ -1506,7 +1506,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Projects, Files, Apps and Tasks execution
 with Seven Bridges API R Client</h1>
-<h4 class="date">2024-07-01</h4>
+<h4 class="date">2025-02-24</h4>
 
 </div>
 
@@ -1985,6 +1985,31 @@ a$files$delete(file = &quot;&lt;file_object_or_id&gt;&quot;)</code></pre>
 <div align="right">
 <a href="#top">top</a>
 </div>
+<div id="asynchronous-delete-action-on-multiple-filesfolders" class="section level3">
+<h3>Asynchronous delete action on multiple files/folders</h3>
+<p>To delete multiple files at once, you can use async action for bulk
+delete. It can be called from the <code>Auth$files</code> path and
+accepts a list of file/folder IDs or <code>File</code> objects. Deletion
+of non-empty folders including their content is allowed.</p>
+<pre class="r"><code># Delete multiple files
+async_delete_job &lt;- a$files$async_bulk_delete(
+  items = list(&quot;file1-id&quot;, &quot;file2-id&quot;, file_obj)
+)</code></pre>
+<p>Since the response returned is an asynchronous job of class
+<code>AsyncJob</code>, you can check its status by reloading the object
+or by calling the function
+<code>a$files$async_get_delete_job()</code>.</p>
+<pre class="r"><code># Reload object to check its status
+async_delete_job$reload()
+async_delete_job
+
+# Or fetch async delete job object by id
+async_delete_job &lt;- a$files$async_get_delete_job(job_id = &quot;&lt;job-id&gt;&quot;)
+async_delete_job</code></pre>
+<div align="right">
+<a href="#top">top</a>
+</div>
+</div>
 </div>
 <div id="copy-files" class="section level2">
 <h2>Copy files</h2>
@@ -2006,6 +2031,50 @@ a$files$copy(
 )</code></pre>
 <div align="right">
 <a href="#top">top</a>
+</div>
+<div id="asynchronous-bulk-copy-of-multiple-files" class="section level3">
+<h3>Asynchronous bulk copy of multiple files</h3>
+<p>This operation lets you perform a bulk copy operation of files and
+folders. Any underlying folder structure will be preserved. You can
+copy:</p>
+<ul>
+<li>to a folder within the same project</li>
+<li>to another project</li>
+<li>to a folder in another project.</li>
+</ul>
+<pre class="r"><code># Fetch files by id to copy into the api-testing project
+file1 &lt;- a$files$get(id = &quot;6435367997d9446ecb66cfb2&quot;)
+file2 &lt;- a$files$get(id = &quot;6435367997d9446ecb66cgr2&quot;)
+
+# Copy files to a project
+async_job_copy &lt;- a$files$async_bulk_copy(
+  items = list(
+    list(
+      file = file1,
+      project = &quot;&lt;username_or_division&gt;/api-testing&quot;
+    ),
+    list(
+      file = file2,
+      parent = &quot;&lt;destination-folder-id&gt;&quot;,
+      name = &quot;copied_file_new_name&quot;
+    )
+  )
+)
+
+# Reload object to check status
+async_job_copy$reload()
+async_job_copy
+
+# Or fetch async copy job object by id
+async_job_copy &lt;- a$files$async_get_copy_job(job_id = &quot;&lt;job-id&gt;&quot;)
+async_job_copy</code></pre>
+<p>This operation allows you to perform bulk copy action and continue
+your work in an R session. The status of the copy operation can be
+previewed by reloading the AsyncJob object or by calling the operation
+<code>a$files$async_get_copy_job()</code>.</p>
+<div align="right">
+<a href="#top">top</a>
+</div>
 </div>
 </div>
 <div id="get-details-of-multiple-files" class="section level2">
@@ -2128,6 +2197,19 @@ a$files$bulk_edit(files = list(file_obj_1, file_obj_2))</code></pre>
 <a href="#top">top</a>
 </div>
 </div>
+<div id="get-details-of-all-asynchronous-file-jobs" class="section level2">
+<h2>Get details of all asynchronous file jobs</h2>
+<p>The <code>async_list_file_jobs()</code> method retrieves details of
+all asynchronous file jobs (async_copy, async_delete, async_move) in a
+single API call. This method accepts <code>limit</code> and
+<code>offset</code> arguments to control the number of returned results.
+The output is a <code>Collection</code> object containing a list of
+<code>AsyncJob</code> objects, each with details such as type, ID,
+status, start and completion time, etc.</p>
+<pre class="r"><code># Get details of all async file jobs
+all_jobs &lt;- a$files$async_list_file_jobs()
+all_jobs</code></pre>
+</div>
 <div id="create-a-folder-within-the-destination-project-or-parent-folder" class="section level2">
 <h2>Create a folder within the destination project or parent folder</h2>
 <p>To create a new folder on the Platform, use the
@@ -2169,6 +2251,60 @@ demo_folder &lt;- a$files$create_folder(
   name = &quot;my_new_folder&quot;,
   parent = &quot;&lt;folder_id&gt;&quot;
 )</code></pre>
+<div align="right">
+<a href="#top">top</a>
+</div>
+</div>
+<div id="asynchronous-bulk-move-of-multiple-files" class="section level2">
+<h2>Asynchronous bulk move of multiple files</h2>
+<p>This operation lets you perform a bulk move operation of files and
+folders. You can move:</p>
+<ul>
+<li>to a root project folder</li>
+<li>to a subfolder within the same project or a different project</li>
+</ul>
+<p>Rules for moving files and folders:</p>
+<ul>
+<li>The file ID is preserved after the move.</li>
+<li>The folder ID is changed after the move.</li>
+<li>The destination has to be an existing folder.</li>
+<li>If the target folder contains a folder with the same name, the
+contents of both folders will be merged.</li>
+<li>If a file with the same name already exists, the source file will be
+automatically renamed (by adding a numeric prefix).</li>
+<li>You need to have <code>WRITE</code> permissions for both the source
+and destination folders.</li>
+</ul>
+<pre class="r"><code># Fetch files by ID to move them into the &quot;api-testing&quot; project
+file1 &lt;- a$files$get(id = &quot;&lt;file-1-id&gt;&quot;)
+file2 &lt;- a$files$get(id = &quot;&lt;file-2-id&gt;&quot;)
+
+# Move files to a project
+async_job_move &lt;- a$files$async_bulk_move(
+  items = list(
+    list(
+      file = file1,
+      project = &quot;&lt;username_or_division&gt;/api-testing&quot;
+    ),
+    list(
+      file = file2,
+      parent = &quot;&lt;destination-folder-id&gt;&quot;,
+      name = &quot;moved_file_new_name&quot;
+    )
+  )
+)
+
+# Reload the object to check the status
+async_job_move$reload()
+async_job_move
+
+# Or fetch the async move job object by id
+async_job_move &lt;- a$files$async_get_move_job(job_id = &quot;&lt;job-id&gt;&quot;)
+async_job_move</code></pre>
+<p>This operation enables you to perform a bulk move action while
+continuing your work in an R session. You can check the status of the
+move operation by reloading the <code>AsyncJob</code> object or calling
+<code>a$files$async_get_move_job()</code>.</p>
 <div align="right">
 <a href="#top">top</a>
 </div>

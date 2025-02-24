@@ -1,7 +1,7 @@
 Package: sevenbridges2
 Type: Package
 Title: The 'Seven Bridges Platform' API Client
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Marko", "Trifunovic", email = "marko.trifunovic@velsera.com", role = c("aut", "cre")),
     person("Marija", "Gacic", email = "marija.jovanovic@velsera.com", role = c("aut")),
@@ -29,10 +29,10 @@ Config/testthat/parallel: true
 Language: en-US
 BugReports: https://github.com/sbg/sevenbridges2/issues
 NeedsCompilation: no
-Packaged: 2024-07-01 15:35:57 UTC; markotrifunovic
+Packaged: 2025-02-24 21:32:56 UTC; markotrifunovic
 Author: Marko Trifunovic [aut, cre],
   Marija Gacic [aut],
   Vladimir Obucina [aut],
   Velsera [cph, fnd]
 Repository: CRAN
-Date/Publication: 2024-07-02 08:00:02 UTC
+Date/Publication: 2025-02-24 23:50:02 UTC

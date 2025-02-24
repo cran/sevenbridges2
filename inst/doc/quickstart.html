@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2024-07-01" />
+<meta name="date" content="2025-02-24" />
 
 <title>Introduction and Quickstart for Seven Bridges API R Client</title>
 
@@ -1506,7 +1506,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Introduction and Quickstart for Seven
 Bridges API R Client</h1>
-<h4 class="date">2024-07-01</h4>
+<h4 class="date">2025-02-24</h4>
 
 </div>
 
@@ -1534,10 +1534,10 @@ preserved.</p>
 <div id="r-client-for-the-seven-bridges-api" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> R Client for the
 Seven Bridges API</h2>
-<p>In order to use the <code>sevenbridges2</code> package users must
+<p>In order to use the <code>sevenbridges2</code> package, users must
 authenticate themselves first by creating an Auth object and providing
-necessary credentials. You can read more about the authentication types
-in our next chapters.</p>
+the necessary credentials. You can read more about the authentication
+types in our next chapters.</p>
 <p>The <code>sevenbridges2</code> package only supports v2+ versions of
 the API, since versions prior to v2 are not compatible with the Common
 Workflow Language (CWL). This package provides a simple interface for
@@ -1545,9 +1545,9 @@ accessing and trying out various methods.</p>
 </div>
 <div id="installation" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Installation</h2>
-<p>The <code>sevenbridges2</code> package is available on CRAN and Seven
-Bridges Github repository.</p>
-<p>To install it from <code>CRAN</code>, use simply:</p>
+<p>The <code>sevenbridges2</code> package is available on CRAN and the
+Seven Bridges GitHub repository.</p>
+<p>To install it from <code>CRAN</code>, simply use:</p>
 <pre class="r"><code># Install package from CRAN
 install.packages(&quot;sevenbridges2&quot;)</code></pre>
 <p>To install the development version from the <code>develop</code>
@@ -1607,18 +1607,19 @@ search for items by name. To search and list all items, use
 you’ve received as the result.</p>
 <p><strong><code>Collection</code></strong></p>
 <p>Every API call that returns a list of items (usually the output from
-<code>query()</code> operations), operations), like fetching projects,
-files, apps etc, wraps the results into a general
-<code>Collection</code> class object containing the <code>items</code>
-field from which users may access the items returned. Additional options
-that the <code>Collection</code> class offers are to navigate between
-pages of results, for example, to load next or previous page of results
-by calling <code>next_page()</code> and <code>prev_page()</code>
+<code>query()</code> operations), like fetching projects, files, apps,
+etc., wraps the results into a general <code>Collection</code> class
+object containing the <code>items</code> field from which users may
+access the items returned. Additional options that the
+<code>Collection</code> class offers are to navigate between pages of
+results, for example, to load next or previous page of results by
+calling <code>next_page()</code> and <code>prev_page()</code>
 methods.</p>
-<p>Moreover, users can fetch all results using <code>Collection</code>’s
-<code>all()</code> method which is a shortcut to send multiple API calls
-for each next page and collect all results. Keep in mind the
-<code>limit</code> used, as well as the API rate limit.</p>
+<p>Moreover, users can fetch all results using the
+<code>Collection</code>’s <code>all()</code> method, which is a shortcut
+to send multiple API calls for each next page and collect all results.
+Keep in mind the <code>limit</code> used, as well as the API rate
+limit.</p>
 <pre class="r"><code># Create a collection of files
 public_files &lt;- a$files$query(project = &quot;admin/sbg-public-data&quot;)
 
@@ -1699,8 +1700,8 @@ two pieces of information.</p>
 <p>Let’s load the package first:</p>
 <pre class="r"><code># Load package
 library(&quot;sevenbridges2&quot;)</code></pre>
-<p>You have three different ways to provide your token. Choose from one
-of the methods below:</p>
+<p>You have three different ways of providing your token. Choose from
+one of the methods below:</p>
 <ol style="list-style-type: decimal">
 <li><p><a href="#method1">Direct authentication.</a> Here you should
 provide your developer token and a base URL for the platform of interest
@@ -1725,8 +1726,8 @@ specify the names of the system environment variables you want to be
 loaded using the <code>sysenv_token</code> and <code>sysenv_url</code>
 arguments.</p></li>
 <li><p><a href="#method3">Authentication via the user configuration
-file.</a> This file, by default
-<code>$HOME/.sevenbridges/credentials</code>, provides an organized way
+file.</a> By default, this file
+(<code>$HOME/.sevenbridges/credentials</code>) provides an organized way
 to collect and manage all your API authentication information for Seven
 Bridges platforms.</p></li>
 </ol>
@@ -1948,7 +1949,7 @@ a$billing_groups$get(id = &quot;&lt;billing_group_id&gt;&quot;)</code></pre>
 </div>
 <p>Please check
 <code>vignette(&quot;Authentication_and_Billing&quot;, package = &quot;sevenbridges2&quot;)</code>
-for more technical details about billing informations.</p>
+for more technical details about billing information.</p>
 </div>
 <div id="list-and-query-projects" class="section level2" number="2.5">
 <h2><span class="header-section-number">2.5</span> List and query
@@ -2079,9 +2080,9 @@ public_apps &lt;- a$apps$query(
 
 # Search by ID
 star_app &lt;- a$apps$get(
-  id = &quot;admin/sbg-public-data/rna-seq-alignment-star/0&quot;
+  id = &quot;admin/sbg-public-data/rna-seq-alignment-star-2-7-10a&quot;
 )</code></pre>
-<p>Now, copy the App your <code>project</code> with a new
+<p>Now, copy the App to your <code>project</code> with a new
 <code>name</code>, following this logic.</p>
 <pre class="r"><code># Copy app into the project
 a$apps$copy(
@@ -2104,7 +2105,7 @@ revision : 0</code></pre>
 <p>Alternatively, you can copy it from the <code>App</code> object.</p>
 <pre class="r"><code># Get public app RNA Sequencing alignment - STAR
 star_app &lt;- a$apps$get(
-  id = &quot;admin/sbg-public-data/rna-seq-alignment-star/0&quot;
+  id = &quot;admin/sbg-public-data/rna-seq-alignment-star-2-7-10a&quot;
 )
 
 # Copy it into a project
@@ -2128,8 +2129,8 @@ task</h2>
 <h3><span class="header-section-number">2.9.1</span> Find your app
 inputs</h3>
 <p>Once you have copied the public app
-<code>admin/sbg-public-data/rna-seq-alignment-star/0</code> into your
-project, <code>&lt;username&gt;/api-testing</code>, the app
+<code>admin/sbg-public-data/rna-seq-alignment-star-2-7-10a</code> into
+your project, <code>&lt;username&gt;/api-testing</code>, the app
 <code>id</code> in your current project is
 <code>&lt;username&gt;/api-testing/newcopyofstar</code>. Alternatively,
 you can use another app you already have in your project for this
@@ -2161,15 +2162,15 @@ copied_star_app$input_matrix()</code></pre>
 match the expected data type and name. In the above example, we see two
 required fields:</p>
 <ul>
-<li><strong>fastq:</strong> This input takes a file array in the
+<li><strong>in_reads:</strong> This input takes a file array in the
 following formats: FASTA, FASTQ, FA, FQ etc.</li>
-<li><strong>genomeFastaFiles:</strong> This is a single reference file
-in the FASTA, FA, FNA or TAR format.</li>
+<li><strong>in_reference_or_sgg_archive:</strong> This is a single
+reference file in the FASTA, FA, FNA or TAR format.</li>
 </ul>
 <p>We also want to provide a gene feature file:</p>
 <ul>
-<li><strong>sjdbGTFfile:</strong> A file array that can be in the GTF,
-GFF, GFF2, or GFF3 format.</li>
+<li><strong>in_gene_annotation:</strong> A file array that can be in the
+GTF, GFF, GFF2, or GFF3 format.</li>
 </ul>
 <p>You can find a list of possible input types below:</p>
 <ul>
@@ -2193,19 +2194,19 @@ as shown in the example below.</li>
 <div id="prepare-your-input-files" class="section level3" number="2.9.2">
 <h3><span class="header-section-number">2.9.2</span> Prepare your input
 files</h3>
-<pre class="r"><code># Get reads (fastq) files and and copy them into a project
-reads_1 &lt;- a$files$get(id = &quot;641c48c425ed1842bd0bf799&quot;) # file id
+<pre class="r"><code># Get reads (fastq) files and copy them into a project
+reads_1 &lt;- a$files$get(id = &quot;5772b6f0507c175267448700&quot;) # file id
 reads_1$copy_to(project = p)
 
-reads_2 &lt;- a$files$get(id = &quot;641c48c425ed1842bd0bf835&quot;) # file id
+reads_2 &lt;- a$files$get(id = &quot;5772b6f2507c175267448703&quot;) # file id
 reads_2$copy_to(project = p)
 
 # Get a single file reference file and copy into a project
-fasta_in &lt;- a$files$get(id = &quot;641c48c525ed1842bd0bf86a&quot;) # file id
+fasta_in &lt;- a$files$get(id = &quot;5c614f097369c402a28a3c41&quot;) # file id
 fasta_in$copy_to(project = p)
 
 # Get gtf file and copy into a project
-gtf_in &lt;- a$files$get(id = &quot;641c48c425ed1842bd0bf825&quot;) # file id
+gtf_in &lt;- a$files$get(id = &quot;5c614e5e7369c402a18a3c41&quot;) # file id
 gtf_in$copy_to(project = p)
 
 # Get copied files
@@ -2225,9 +2226,9 @@ tsk &lt;- p$create_task(
   description = &quot;STAR test&quot;,
   app = copied_star_app,
   inputs = list(
-    &quot;fastq&quot; = c(input_files[[1]], input_files[[2]]),
-    &quot;genomeFastaFiles&quot; = input_files[[3]],
-    &quot;sjdbGTFfile&quot; = list(input_files[[4]])
+    &quot;in_reads&quot; = c(input_files[[1]], input_files[[2]]),
+    &quot;in_reference_or_sgg_archive&quot; = input_files[[3]],
+    &quot;in_gene_annotation&quot; = input_files[[4]]
   )
 )
 
@@ -2303,7 +2304,7 @@ controlled on the project level or the task level on Seven Bridges
 platforms. Our package follows the same <a href="https://docs.sevenbridges.com/docs/use-spot-instances">logic</a>
 as our platform’s web interface (the current default setting for spot
 instances is <strong>on</strong>).</p>
-<p>For example, when we create a project using Projects resource’s
+<p>For example, when we create a project using the Projects resource’s
 method <code>create()</code>, we can set
 <code>use_interruptible = FALSE</code> to use on-demand instances
 (non-interruptible but more expensive) instead of the spot instances

@@ -172,6 +172,21 @@ knitr::opts_chunk$set(
 #  a$files$delete(file = "<file_object_or_id>")
 
 ## -----------------------------------------------------------------------------
+#  # Delete multiple files
+#  async_delete_job <- a$files$async_bulk_delete(
+#    items = list("file1-id", "file2-id", file_obj)
+#  )
+
+## -----------------------------------------------------------------------------
+#  # Reload object to check its status
+#  async_delete_job$reload()
+#  async_delete_job
+#  
+#  # Or fetch async delete job object by id
+#  async_delete_job <- a$files$async_get_delete_job(job_id = "<job-id>")
+#  async_delete_job
+
+## -----------------------------------------------------------------------------
 #  # Fetch files by id to copy into the api-testing project
 #  file1 <- a$files$get(id = "6435367997d9446ecb66cfb2")
 #  file2 <- a$files$get(id = "6435367997d9446ecb66cgr2")
@@ -181,6 +196,34 @@ knitr::opts_chunk$set(
 #    files = list(file1, file2),
 #    destination_project = "<username_or_division>/api-testing"
 #  )
+
+## -----------------------------------------------------------------------------
+#  # Fetch files by id to copy into the api-testing project
+#  file1 <- a$files$get(id = "6435367997d9446ecb66cfb2")
+#  file2 <- a$files$get(id = "6435367997d9446ecb66cgr2")
+#  
+#  # Copy files to a project
+#  async_job_copy <- a$files$async_bulk_copy(
+#    items = list(
+#      list(
+#        file = file1,
+#        project = "<username_or_division>/api-testing"
+#      ),
+#      list(
+#        file = file2,
+#        parent = "<destination-folder-id>",
+#        name = "copied_file_new_name"
+#      )
+#    )
+#  )
+#  
+#  # Reload object to check status
+#  async_job_copy$reload()
+#  async_job_copy
+#  
+#  # Or fetch async copy job object by id
+#  async_job_copy <- a$files$async_get_copy_job(job_id = "<job-id>")
+#  async_job_copy
 
 ## -----------------------------------------------------------------------------
 #  # Get details of multiple files by providing their IDs
@@ -223,6 +266,11 @@ knitr::opts_chunk$set(
 #  a$files$bulk_edit(files = list(file_obj_1, file_obj_2))
 
 ## -----------------------------------------------------------------------------
+#  # Get details of all async file jobs
+#  all_jobs <- a$files$async_list_file_jobs()
+#  all_jobs
+
+## -----------------------------------------------------------------------------
 #  # Option 1 - Using the project parameter
 #  
 #  # Option 1.a (providing a Project object as the project parameter)
@@ -253,6 +301,34 @@ knitr::opts_chunk$set(
 #    name = "my_new_folder",
 #    parent = "<folder_id>"
 #  )
+
+## -----------------------------------------------------------------------------
+#  # Fetch files by ID to move them into the "api-testing" project
+#  file1 <- a$files$get(id = "<file-1-id>")
+#  file2 <- a$files$get(id = "<file-2-id>")
+#  
+#  # Move files to a project
+#  async_job_move <- a$files$async_bulk_move(
+#    items = list(
+#      list(
+#        file = file1,
+#        project = "<username_or_division>/api-testing"
+#      ),
+#      list(
+#        file = file2,
+#        parent = "<destination-folder-id>",
+#        name = "moved_file_new_name"
+#      )
+#    )
+#  )
+#  
+#  # Reload the object to check the status
+#  async_job_move$reload()
+#  async_job_move
+#  
+#  # Or fetch the async move job object by id
+#  async_job_move <- a$files$async_get_move_job(job_id = "<job-id>")
+#  async_job_move
 
 ## -----------------------------------------------------------------------------
 #  # Get some file
