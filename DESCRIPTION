@@ -1,7 +1,7 @@
 Package: sevenbridges2
 Type: Package
 Title: The 'Seven Bridges Platform' API Client
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
     person("Marko", "Trifunovic", email = "marko.trifunovic@velsera.com", role = c("aut", "cre")),
     person("Marija", "Gacic", email = "marija.jovanovic@velsera.com", role = c("aut")),
@@ -19,7 +19,7 @@ URL: https://www.sevenbridges.com,
         https://sbg.github.io/sevenbridges2/,
         https://github.com/sbg/sevenbridges2
 Depends: R (>= 4.2.0)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: httr, R6, purrr, jsonlite, cli, rlang, curl, glue, stringr,
         utils, checkmate, DescTools, yaml, readr, data.table
 Suggests: knitr, rmarkdown, testthat (>= 3.0.0), stringi, withr,
@@ -29,10 +29,10 @@ Config/testthat/parallel: true
 Language: en-US
 BugReports: https://github.com/sbg/sevenbridges2/issues
 NeedsCompilation: no
-Packaged: 2025-02-24 21:32:56 UTC; markotrifunovic
+Packaged: 2025-03-25 14:08:27 UTC; markotrifunovic
 Author: Marko Trifunovic [aut, cre],
   Marija Gacic [aut],
   Vladimir Obucina [aut],
   Velsera [cph, fnd]
 Repository: CRAN
-Date/Publication: 2025-02-24 23:50:02 UTC
+Date/Publication: 2025-03-25 22:50:02 UTC

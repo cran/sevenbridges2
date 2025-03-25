@@ -347,7 +347,7 @@ knitr::opts_chunk$set(
 #  
 #  # Update file metadata
 #  demo_file$update(
-#    metadata = list("<metadata_field>" = "<metadata_field_value")
+#    metadata = list("<metadata_field>" = "<metadata_field_value>")
 #  )
 #  
 #  # Update file tags

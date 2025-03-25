@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
 #  install.packages("sevenbridges2")
 
 ## -----------------------------------------------------------------------------
-#  # Install package from github
+#  # Install package from GitHub
 #  remotes::install_github(
 #    "sbg/sevenbridges2",
 #    build_vignettes = TRUE, dependencies = TRUE
@@ -222,7 +222,7 @@ knitr::opts_chunk$set(
 #  fasta_in <- a$files$get(id = "5c614f097369c402a28a3c41") # file id
 #  fasta_in$copy_to(project = p)
 #  
-#  # Get gtf file and copy into a project
+#  # Get GTF file and copy into a project
 #  gtf_in <- a$files$get(id = "5c614e5e7369c402a18a3c41") # file id
 #  gtf_in$copy_to(project = p)
 #  

@@ -165,7 +165,7 @@ knitr::opts_chunk$set(
 #  my_billing_group$egress_breakdown()
 
 ## -----------------------------------------------------------------------------
-#  # Reload Billing objcet
+#  # Reload Billing object
 #  my_billing_group$reload()
 
 ## -----------------------------------------------------------------------------

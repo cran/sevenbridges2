@@ -276,11 +276,11 @@ knitr::opts_chunk$set(
 #  aws_iam_user_volume$list_members() # limit = 2
 #  
 #  # Get single member
-#  aws_iam_user_volume$get_member(user = "<member-username>")
+#  aws_iam_user_volume$get_member(member = "<member-username>")
 
 ## -----------------------------------------------------------------------------
 #  # Remove member
-#  aws_iam_user_volume$remove_member("<member-username>")
+#  aws_iam_user_volume$remove_member(member = "<member-username>")
 #  
 #  # Remove member using the Member object
 #  members <- aws_iam_user_volume$list_members()
@@ -288,9 +288,10 @@ knitr::opts_chunk$set(
 
 ## -----------------------------------------------------------------------------
 #  # Add member via username
-#  aws_iam_user_volume$add_member(user = "<member-username>", permissions = list(
-#    read = TRUE, copy = TRUE, write = FALSE, admin = FALSE
-#  ))
+#  aws_iam_user_volume$add_member(
+#    user = "<member-username>",
+#    permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+#  )
 #  
 #  # Add member via Member object
 #  aws_iam_user_volume$add_member(
@@ -305,9 +306,49 @@ knitr::opts_chunk$set(
 #  )
 
 ## -----------------------------------------------------------------------------
+#  # Add team via team ID
+#  aws_iam_user_volume$add_member_team(
+#    team = "<team-id>",
+#    permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+#  )
+#  
+#  # Add member via Team object
+#  # Query teams in division and fetch first team to add to a volume
+#  teams <- a$teams$query(division = "division-id")
+#  team <- teams$items[[1]]
+#  
+#  aws_iam_user_volume$add_member_team(
+#    team = team,
+#    permissions = list(
+#      read = TRUE, copy = TRUE, write = FALSE,
+#      admin = FALSE
+#    )
+#  )
+
+## -----------------------------------------------------------------------------
+#  # Add division via division ID
+#  aws_iam_user_volume$add_member_division(
+#    division = "<division-id>",
+#    permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+#  )
+#  
+#  # Add member via Division object
+#  # Query divisions and fetch first division to add to a volume
+#  divisions <- a$divisions$query()
+#  division <- divisions$items[[1]]
+#  
+#  aws_iam_user_volume$add_member_division(
+#    division = division,
+#    permissions = list(
+#      read = TRUE, copy = TRUE, write = FALSE,
+#      admin = FALSE
+#    )
+#  )
+
+## -----------------------------------------------------------------------------
 #  # Modify member permissions
 #  aws_iam_user_volume$modify_member_permissions(
-#    user = "<member-username>",
+#    member = "<member-username>",
 #    permissions = list(write = TRUE)
 #  )
 

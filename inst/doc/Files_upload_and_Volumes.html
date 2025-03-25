@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2025-02-24" />
+<meta name="date" content="2025-03-25" />
 
 <title>File upload and Volumes reference guide for Seven Bridges API R Client</title>
 
@@ -1506,7 +1506,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">File upload and Volumes reference guide for
 Seven Bridges API R Client</h1>
-<h4 class="date">2025-02-24</h4>
+<h4 class="date">2025-03-25</h4>
 
 </div>
 
@@ -2086,7 +2086,10 @@ username, you can use <code>list_members()</code> and
 aws_iam_user_volume$list_members() # limit = 2
 
 # Get single member
-aws_iam_user_volume$get_member(user = &quot;&lt;member-username&gt;&quot;)</code></pre>
+aws_iam_user_volume$get_member(member = &quot;&lt;member-username&gt;&quot;)</code></pre>
+<p>This action works also with teams and divisions as volume members if
+ran by user with ADMIN account privileges. The input should be either
+such Member object or team/division string ID.</p>
 <div align="right">
 <a href="#top">top</a>
 </div>
@@ -2097,24 +2100,28 @@ aws_iam_user_volume$get_member(user = &quot;&lt;member-username&gt;&quot;)</code
 object of the <code>Member</code> class to the
 <code>remove_member()</code> function:</p>
 <pre class="r"><code># Remove member
-aws_iam_user_volume$remove_member(&quot;&lt;member-username&gt;&quot;)
+aws_iam_user_volume$remove_member(member = &quot;&lt;member-username&gt;&quot;)
 
 # Remove member using the Member object
 members &lt;- aws_iam_user_volume$list_members()
 aws_iam_user_volume$remove_member(members$items[[3]])</code></pre>
+<p>This action works also with teams and divisions as volume members if
+ran by user with ADMIN account privileges. The input should be either
+such Member object or team/division string ID.</p>
 <div align="right">
 <a href="#top">top</a>
 </div>
 </div>
 <div id="adding-new-members" class="section level3">
 <h3>Adding new members</h3>
-<p>The function for adding new members to the volume can accept a
+<p>The function for adding new members to the volume allows a
 <code>Member</code> object (for example used in a project) or its
-username.</p>
+username as input.</p>
 <pre class="r"><code># Add member via username
-aws_iam_user_volume$add_member(user = &quot;&lt;member-username&gt;&quot;, permissions = list(
-  read = TRUE, copy = TRUE, write = FALSE, admin = FALSE
-))
+aws_iam_user_volume$add_member(
+  user = &quot;&lt;member-username&gt;&quot;,
+  permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+)
 
 # Add member via Member object
 aws_iam_user_volume$add_member(
@@ -2127,8 +2134,58 @@ aws_iam_user_volume$add_member(
     admin = FALSE
   )
 )</code></pre>
+<div id="users-with-admin-privileges-on-divisions-or-enterprises" class="section level4">
+<h4>Users with ADMIN privileges on divisions or enterprises</h4>
+<p>Users with Enterprise account (not linked to any division) can add
+whole teams<br />
+and divisions as members of a specified volume. However, be aware that
+those<br />
+users (if MEMBER role) cannot list divisions or fetch single
+division/team.</p>
+<p>Users with ADMIN and MEMBER privileges on some Division can add teams
+from this division to a volume created in the same division.</p>
+<pre class="r"><code># Add team via team ID
+aws_iam_user_volume$add_member_team(
+  team = &quot;&lt;team-id&gt;&quot;,
+  permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+)
+
+# Add member via Team object
+# Query teams in division and fetch first team to add to a volume
+teams &lt;- a$teams$query(division = &quot;division-id&quot;)
+team &lt;- teams$items[[1]]
+
+aws_iam_user_volume$add_member_team(
+  team = team,
+  permissions = list(
+    read = TRUE, copy = TRUE, write = FALSE,
+    admin = FALSE
+  )
+)</code></pre>
+<p>Enterprise users with ADMIN privileges that are part of default
+division can add both divisions and teams from any division to a volume
+created in this default division:</p>
+<pre class="r"><code># Add division via division ID
+aws_iam_user_volume$add_member_division(
+  division = &quot;&lt;division-id&gt;&quot;,
+  permissions = list(read = TRUE, copy = TRUE, write = FALSE, admin = FALSE)
+)
+
+# Add member via Division object
+# Query divisions and fetch first division to add to a volume
+divisions &lt;- a$divisions$query()
+division &lt;- divisions$items[[1]]
+
+aws_iam_user_volume$add_member_division(
+  division = division,
+  permissions = list(
+    read = TRUE, copy = TRUE, write = FALSE,
+    admin = FALSE
+  )
+)</code></pre>
 <div align="right">
 <a href="#top">top</a>
+</div>
 </div>
 </div>
 <div id="modifying-a-members-permissions" class="section level3">
@@ -2137,9 +2194,12 @@ aws_iam_user_volume$add_member(
 providing the privileges they want to change:</p>
 <pre class="r"><code># Modify member permissions
 aws_iam_user_volume$modify_member_permissions(
-  user = &quot;&lt;member-username&gt;&quot;,
+  member = &quot;&lt;member-username&gt;&quot;,
   permissions = list(write = TRUE)
 )</code></pre>
+<p>This action works also with teams and divisions as volume members if
+ran by user with ADMIN account privileges. The input should be either
+such Member object or team/division string ID.</p>
 <div align="right">
 <a href="#top">top</a>
 </div>
@@ -2610,7 +2670,7 @@ and export them into a volume using a single call of the
 you want to export containing specific fields: <code>source_file</code>,
 <code>destination_volume</code>, <code>destination_location</code>,
 <code>overwrite</code> and <code>properties</code> that accepts a list
-with fields: <code>sse_algorithm</code>, <code>sse_aws_kms_key_id</code>
+with fields: <code>sse_algorithm</code>, <code>sse_aws_kms_key_Id</code>
 and/or <code>aws_canned_acl</code>.</p>
 <pre class="r"><code>## First, get the project and files you want to export
 test_proj &lt;- a$projects$get(&quot;&lt;project_id&gt;&quot;)
